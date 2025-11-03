@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "requests-load-balancer"
-version = "0.0.1"
+version = "0.0.2"
 description = "A Python library for load balancing HTTP requests across multiple hosts with health checking"
 readme = "README.md"
 requires-python = ">=3.7"
