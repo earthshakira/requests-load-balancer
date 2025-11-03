@@ -3,7 +3,8 @@ LoadBalancer class for routing requests across multiple hosts with health checki
 """
 
 import requests
-from typing import List, Optional, Set
+import time
+from typing import List, Optional, Set, Dict
 from itertools import cycle
 
 
@@ -20,28 +21,46 @@ class LoadBalancer:
         hosts: List of host URLs to load balance across
         error_codes: Set of HTTP status codes that indicate an unhealthy host
                      (default: {500, 502, 503, 504})
+        unhealthy_timeout: Time in seconds after which an unhealthy host should be
+                          retried (default: 60 seconds). Set to None to disable.
     
     Example:
         >>> lb = LoadBalancer(['http://host1.com', 'http://host2.com'])
         >>> response = lb.get('/api/endpoint')
     """
     
-    def __init__(self, hosts: List[str], error_codes: Optional[Set[int]] = None):
+    def __init__(self, hosts: List[str], error_codes: Optional[Set[int]] = None, 
+                 unhealthy_timeout: Optional[float] = 60):
         """
         Initialize the LoadBalancer with hosts and error codes.
         
         Args:
             hosts: List of host URLs to balance requests across
             error_codes: Set of HTTP status codes indicating unhealthy hosts
+            unhealthy_timeout: Time in seconds before retrying an unhealthy host
         """
         if not hosts:
             raise ValueError("At least one host must be provided")
         
         self.hosts = [host.rstrip('/') for host in hosts]
         self.error_codes = error_codes or {500, 502, 503, 504}
-        self.unhealthy_hosts: Set[str] = set()
+        self.unhealthy_timeout = unhealthy_timeout
+        self.unhealthy_hosts: Dict[str, float] = {}
         self._host_cycle = cycle(self.hosts)
         self._current_host = None
+    
+    def _cleanup_expired_unhealthy_hosts(self):
+        """Remove hosts from unhealthy list if their timeout has expired."""
+        if self.unhealthy_timeout is None:
+            return
+        
+        current_time = time.time()
+        expired_hosts = [
+            host for host, timestamp in self.unhealthy_hosts.items()
+            if current_time - timestamp >= self.unhealthy_timeout
+        ]
+        for host in expired_hosts:
+            del self.unhealthy_hosts[host]
     
     def _get_next_host(self) -> Optional[str]:
         """
@@ -50,6 +69,9 @@ class LoadBalancer:
         Returns:
             Next healthy host URL or None if all hosts are unhealthy
         """
+        # Clean up expired unhealthy hosts before selecting next host
+        self._cleanup_expired_unhealthy_hosts()
+        
         healthy_hosts = [h for h in self.hosts if h not in self.unhealthy_hosts]
         
         if not healthy_hosts:
@@ -71,8 +93,8 @@ class LoadBalancer:
         return None
     
     def _mark_unhealthy(self, host: str):
-        """Mark a host as unhealthy."""
-        self.unhealthy_hosts.add(host)
+        """Mark a host as unhealthy with a timestamp."""
+        self.unhealthy_hosts[host] = time.time()
     
     def _is_error_response(self, status_code: int) -> bool:
         """Check if status code indicates an unhealthy host."""
