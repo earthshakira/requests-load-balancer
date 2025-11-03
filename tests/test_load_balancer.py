@@ -1,7 +1,7 @@
 """Tests for LoadBalancer class."""
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import requests
 from requests_load_balancer import LoadBalancer
 
