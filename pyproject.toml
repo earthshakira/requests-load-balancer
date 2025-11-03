@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "GoCredit", email = "info@gocredit.com"}
+    {name = "earthshakira", email = "arawkar.shubham08@gmail.com"}
 ]
 keywords = ["requests", "load-balancer", "http", "client", "failover", "health-check"]
 classifiers = [
@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/GoCredit/requests-load-balancer"
-Repository = "https://github.com/GoCredit/requests-load-balancer"
-"Bug Tracker" = "https://github.com/GoCredit/requests-load-balancer/issues"
+Homepage = "https://github.com/earthshakira/requests-load-balancer"
+Repository = "https://github.com/earthshakira/requests-load-balancer"
+"Bug Tracker" = "https://github.com/earthshakira/requests-load-balancer/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
