@@ -142,7 +142,7 @@ except RuntimeError as e:
 
 ## Requirements
 
-- Python >= 3.7
+- Python >= 3.8
 - requests >= 2.25.0
 
 ## License
